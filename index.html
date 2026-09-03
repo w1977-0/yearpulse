@@ -30,6 +30,8 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
+  /* everything shares one left edge; only the page sits centered */
+  main > * { text-align: left; }
   main { width: min(52rem, 94vw); }
   .masthead {
     display: flex; align-items: baseline; justify-content: space-between;
@@ -42,10 +44,11 @@
   .meter {
     display: grid;
     grid-template-columns: auto 1fr;
-    align-items: center;
+    align-items: start;               /* caliper rule: the reading tops the scale */
     column-gap: clamp(1rem, 3.5vw, 2.2rem);
     margin-top: .4rem;
   }
+  .meter .pct { padding-top: .06em; } /* optical: digits and scale top edge */
   .pct {
     font: 700 clamp(3.2rem, 11.5vw, 6.4rem)/0.94 system-ui, "Helvetica Neue", Helvetica, sans-serif;
     font-variant-numeric: tabular-nums;
@@ -83,19 +86,20 @@
 
   /* the world: one instant, six zones, one strict grid */
   .world {
-    margin-top: 1.6rem;
+    margin-top: 1.7rem;
     display: grid; grid-template-columns: repeat(6, 1fr);
     border-top: 1px solid var(--hair);
   }
+  .city { padding-top: .85rem; }
   .city {
-    padding: .7rem .9rem .75rem 0;
+    padding: 0 .9rem .8rem 0;
     border-bottom: 1px solid var(--hair);
   }
   .city + .city { border-left: 1px solid var(--hair); padding-left: .9rem; }
   .cname { font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
   .cdate { font-size: .8rem; color: var(--faint); margin-top: .18rem; font-variant-numeric: tabular-nums; }
   .cpct { font: 650 .92rem/1 system-ui, sans-serif; font-variant-numeric: tabular-nums; margin-top: .3rem; }
-  .cbar { position: relative; height: .38rem; margin-top: .34rem; background: var(--paper); border: 1px solid var(--fg); }
+  .cbar { position: relative; height: .34rem; margin-top: .38rem; background: var(--paper); border: 0; border-bottom: 1px solid var(--hair); }
   .cbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); }
   .cbar u { position: absolute; top: 0; bottom: 0; right: 0; background-image: repeating-linear-gradient(45deg, var(--fg) 0 1px, transparent 1px 4px); }
 
@@ -106,7 +110,6 @@
     .world { grid-template-columns: repeat(3, 1fr); }
     .city:nth-child(4) { border-left: 0; padding-left: 0; }
     .meter { grid-template-columns: 1fr; row-gap: 1rem; }
-    .pct { text-align: left; }
   }
   @media (prefers-reduced-motion: reduce) { .scale, .scale * { transition: none; } }
 </style>
@@ -115,10 +118,10 @@
 <main>
   <div class="masthead">
     <span class="brand" id="year">—</span>
-    <span class="mast-note">what per cent of the year is already gone</span>
+    <span class="mast-note">what per cent of the year is already gone · <span class="zone" id="tzline">…</span></span>
   </div>
   <div class="meter">
-    <div class="pct" id="num"><span class="digits">…</span><small>%</small></div>
+    <div class="pct"><span class="digits" id="num">…</span><small>%</small></div>
     <div class="scale" role="progressbar" aria-label="Year progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="gone" id="gone"></div>
       <div class="left" id="left"></div>
@@ -130,7 +133,6 @@
     <span>day <b id="doy">—</b> of <span id="diy">—</span></span>
     <span><b id="left-days">—</b> days left</span>
     <span>week <b id="woy">—</b></span>
-    <span class="zone" id="tzline">…</span>
   </div>
   <div class="world" id="world" aria-label="The same year, six timezones"></div>
   <footer><span>timezone-correct by UTC arithmetic</span><a href="https://github.com/w1977-0/yearpulse" rel="noopener">yearpulse</a><a href="https://github.com/w1977-0/yearpulse#why-most-year-progress-pages-are-wrong" rel="noopener">why this one is right</a></footer>
@@ -365,7 +367,7 @@
 
     var digits = r.percent.toFixed(4);
     if (digits !== lastPct) {
-      elPct.firstChild.nodeValue = digits;   // <span class="digits"> text node
+      elPct.textContent = digits;   // writes the text inside <span id="num">
       lastPct = digits;
     }
     var step = Math.floor(r.progress * 1000) / 1000;
@@ -400,6 +402,15 @@
   }
 
   render();
+  // Self-check: if the first render did not replace the placeholder, show it
+  // loudly instead of failing silently (a regression like the span-wrap bug).
+  if (elPct.textContent.indexOf("…") !== -1 || !/\d/.test(elPct.textContent)) {
+    elPct.textContent = "0.0000";
+    var line = document.createElement("div");
+    line.style.cssText = "margin-top:.6rem;font:600 .8rem ui-monospace,monospace;color:var(--faint)";
+    line.textContent = "renderer error — please report at github.com/w1977-0/yearpulse";
+    document.querySelector(".meter").appendChild(line);
+  }
 })();
 </script>
 </body>
