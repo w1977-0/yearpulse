@@ -5,89 +5,127 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>yearpulse — what per cent of the year is already gone?</title>
 <meta name="description" content="This year, as a pulse: a live percentage of the year, correct for your timezone — DST and calendar skips included. Watch six cities hold the same year at six different speeds.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='18' y='4' width='28' height='56' rx='4' fill='%2326262c'/%3E%3Crect x='18' y='26' width='28' height='34' rx='4' fill='%23e8b25e'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='4' y='24' width='36' height='16' fill='%23111'/%3E%3Crect x='40' y='24' width='20' height='16' fill='none' stroke='%23111' stroke-width='2'/%3E%3Cpath d='M40 24 48 40 56 24 64 40 72 24'/%3E%3C/svg%3E">
 <style>
-  :root { color-scheme: light dark; --dim: #8a867c; --txt: #e8e4d8; --bg: #101014; --amber: #e8b25e; --amber2: #d97a3d; }
-  @media (prefers-color-scheme: light) {
-    :root { --dim: #6b675f; --txt: #1c1b18; --bg: #f6f4ee; --amber: #c47a20; --amber2: #a5541e; }
+  :root {
+    color-scheme: light dark;
+    --ink: #141311;        /* the elapsed: solid fact */
+    --paper: #f4f2ec;      /* warm paper, not cold white */
+    --fg: #141311;
+    --bg: #f4f2ec;
+    --faint: rgba(20,19,17,.55);
+    --hair: rgba(20,19,17,.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #f2efe8; --paper: #17171a; --fg: #ece9e2; --bg: #101010; --faint: rgba(242,239,232,.55); --hair: rgba(242,239,232,.16); }
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { height: 100%; }
   body {
-    font: 16px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg); color: var(--txt);
-    min-height: 100dvh; padding: clamp(1rem, 4vh, 3rem) 1.25rem;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; -webkit-font-smoothing: antialiased;
+    font: 16px/1.45 ui-sans-serif, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--fg);
+    min-height: 100dvh;
+    display: grid; place-items: center;
+    padding: clamp(1.2rem, 5vh, 3.5rem) 1.25rem;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-  .stage { display: flex; align-items: center; gap: clamp(1.5rem, 6vw, 4.5rem); }
-  /* vertical pulse bar, width:height ≈ 1:3.6 — the light (year still left)
-     settles to the bottom; the drained part falls away from the top */
-  .vbar {
-    position: relative; width: clamp(3.2rem, 8vw, 4.4rem); height: clamp(11.5rem, 30vh, 15.8rem);
-    border-radius: .45rem; background: color-mix(in srgb, var(--txt) 8%, transparent);
-    overflow: hidden; flex: none;
+  main { width: min(52rem, 94vw); }
+
+  /* the meter: percent on the left, hatched bar to its right */
+  .meter {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    column-gap: clamp(1rem, 3.5vw, 2.2rem);
+    margin-top: .4rem;
   }
-  .vbar .remain {
-    position: absolute; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(180deg, var(--amber2), var(--amber) 65%, #f4d9a8);
-    box-shadow: 0 0 22px color-mix(in srgb, var(--amber) 45%, transparent);
-  }
-  .vbar .nowline {
-    position: absolute; left: 0; right: 0; height: 1px;
-    background: var(--txt); opacity: .9;
-  }
-  .vbar .nowline::after {
-    content: ""; position: absolute; left: 0; top: -3px; width: 7px; height: 7px;
-    border-radius: 50%; background: var(--txt);
-  }
-  .panel { text-align: left; }
-  .year { font-size: .82rem; letter-spacing: .35em; text-transform: uppercase; color: var(--dim); }
   .pct {
-    font: 800 clamp(3.4rem, 15vw, 8.2rem)/1.02 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-variant-numeric: tabular-nums; letter-spacing: -.045em; margin: .12em 0 .1em;
+    font: 700 clamp(3.2rem, 11.5vw, 6.4rem)/0.94 system-ui, "Helvetica Neue", Helvetica, sans-serif;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -.03em;
+    text-align: right;
+    white-space: nowrap;
   }
-  .pct small { font-size: .3em; font-weight: 600; opacity: .5; letter-spacing: 0; }
-  .meta { font-size: .92rem; color: var(--dim); }
-  .meta b { color: var(--txt); font-weight: 600; }
-  .tz { margin-top: .35rem; font-size: .78rem; color: var(--dim); }
-  .tz code { font-family: ui-monospace, Menlo, Consolas, monospace; }
-  /* world row: six cities holding the same year at different speeds */
+  .pct small { font-size: .38em; font-weight: 650; letter-spacing: 0; vertical-align: .28em; margin-left: .04em; }
+  .pct .digits { display: inline-block; min-width: 5ch; } /* 100.00 worst case: the bar never jumps */
+  .scale {
+    position: relative; height: clamp(2.4rem, 6vw, 3.4rem);
+    background: var(--paper);
+    border: 2px solid var(--fg);
+    overflow: hidden;
+  }
+  .scale .gone {                     /* elapsed — solid ink, a fact */
+    position: absolute; left: 0; top: 0; bottom: 0;
+    background: var(--ink);
+  }
+  .scale .left {                      /* remaining — hatched reservation */
+    position: absolute; top: 0; bottom: 0; right: 0;
+    background-image: repeating-linear-gradient(45deg, var(--fg) 0 1px, transparent 1px 7px);
+  }
+  .scale .now {                        /* the present — a clean hairline */
+    position: absolute; top: -2px; bottom: -2px; width: 2px;
+    background: var(--fg);
+    outline: 2px solid var(--bg);     /* keep it legible over the hatch */
+  }
+
+  .rule { border: 0; border-top: 1px solid var(--hair); margin: 1.15rem 0 1rem; }
+
+  .facts { display: flex; flex-wrap: wrap; gap: .45rem 1.6rem; font-size: .82rem; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .facts b { color: var(--fg); font-weight: 600; }
+  .facts .yr { font-weight: 700; letter-spacing: .3em; text-transform: uppercase; font-size: .72rem; margin-right: auto; }
+
+  /* the world: one instant, six zones, one strict grid */
   .world {
-    margin-top: clamp(2rem, 7vh, 3.6rem);
-    display: grid; grid-template-columns: repeat(6, minmax(4.6rem, 1fr));
-    gap: clamp(.4rem, 1.6vw, 1.2rem);
-    width: min(46rem, 94vw);
+    margin-top: 1.6rem;
+    display: grid; grid-template-columns: repeat(6, 1fr);
+    border-top: 1px solid var(--hair);
   }
-  .city .cname { font-size: .74rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--dim); }
-  .city .cdate { font-size: .82rem; margin: .1rem 0 .18rem; font-variant-numeric: tabular-nums; }
-  .city .cpct { font: 600 .95rem/1 ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
-  .city .cbar { margin-top: .35rem; height: .22rem; border-radius: 99px; background: color-mix(in srgb, var(--txt) 10%, transparent); overflow: hidden; }
-  .city .cbar i { display: block; height: 100%; background: var(--amber); border-radius: 99px; }
-  @media (max-width: 34rem) {
-    .world { grid-template-columns: repeat(3, 1fr); row-gap: 1.1rem; }
-    .stage { flex-direction: column-reverse; gap: 1.6rem; }
-    .panel { text-align: center; }
+  .city {
+    padding: .7rem .9rem .75rem 0;
+    border-bottom: 1px solid var(--hair);
   }
-  @media (prefers-reduced-motion: reduce) { .vbar .remain, .vbar .nowline { transition: none; } }
-  footer { margin-top: clamp(1.6rem, 6vh, 3rem); font-size: .72rem; color: var(--dim); }
+  .city + .city { border-left: 1px solid var(--hair); padding-left: .9rem; }
+  .cname { font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+  .cdate { font-size: .8rem; color: var(--faint); margin-top: .18rem; font-variant-numeric: tabular-nums; }
+  .cpct { font: 650 .92rem/1 system-ui, sans-serif; font-variant-numeric: tabular-nums; margin-top: .3rem; }
+  .cbar { position: relative; height: .3rem; margin-top: .34rem; background: var(--paper); border: 1px solid var(--fg); }
+  .cbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); }
+  .cbar u { position: absolute; top: 0; bottom: 0; right: 0; background-image: repeating-linear-gradient(45deg, var(--fg) 0 1px, transparent 1px 4px); }
+
+  footer { margin-top: 1.5rem; font-size: .7rem; color: var(--faint); display: flex; gap: 1.4rem; flex-wrap: wrap; }
   footer a { color: inherit; }
+
+  @media (max-width: 40rem) {
+    .world { grid-template-columns: repeat(3, 1fr); }
+    .city:nth-child(4) { border-left: 0; padding-left: 0; }
+    .meter { grid-template-columns: 1fr; row-gap: 1rem; }
+    .pct { text-align: left; }
+  }
+  @media (prefers-reduced-motion: reduce) { .scale, .scale * { transition: none; } }
 </style>
 </head>
 <body>
-  <div class="stage">
-    <div class="vbar" role="progressbar" aria-label="Year progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-      <div class="remain" id="remain"></div>
-      <div class="nowline" id="nowline"></div>
-    </div>
-    <div class="panel">
-      <div class="year" id="year">—</div>
-      <div class="pct"><span id="num">…</span><small>%</small></div>
-      <p class="meta" id="meta">…</p>
-      <p class="tz" id="tzline">…</p>
+<main>
+  <div class="meter">
+    <div class="pct" id="num"><span class="digits">…</span><small>%</small></div>
+    <div class="scale" role="progressbar" aria-label="Year progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="gone" id="gone"></div>
+      <div class="left" id="left"></div>
+      <div class="now" id="now"></div>
     </div>
   </div>
+  <hr class="rule">
+  <div class="facts">
+    <span class="yr" id="year">—</span>
+    <span>day <b id="doy">—</b> of <span id="diy">—</span></span>
+    <span><b id="left-days">—</b> days left</span>
+    <span>week <b id="woy">—</b></span>
+    <span id="tzline">…</span>
+  </div>
   <div class="world" id="world" aria-label="The same year, six timezones"></div>
-  <footer><a href="https://github.com/w1977-0/yearpulse" rel="noopener">yearpulse</a> · timezone-correct by UTC arithmetic · <a href="https://github.com/w1977-0/yearpulse#why-most-year-progress-pages-are-wrong" rel="noopener">why this one is right</a></footer>
+  <footer><a href="https://github.com/w1977-0/yearpulse" rel="noopener">yearpulse</a><a href="https://github.com/w1977-0/yearpulse#why-most-year-progress-pages-are-wrong" rel="noopener">why this one is right</a></footer>
+</main>
 <script>
 // yearmath.js — yearpulse core math. Zero dependencies, runs in browser and Node.
 //
@@ -272,17 +310,12 @@
 
 (function () {
   "use strict";
-  // ---- viewer zone: ?tz= override, else the browser's, else UTC -----------
   var explicit = null;
   try {
     var q = new URLSearchParams(location.search).get("tz");
     if (q && yearmath.supportsZone(q)) explicit = q;
   } catch (e) {}
 
-  // Six cities chosen for human coverage: these zones hold roughly three
-  // quarters of humanity (E-Asia +8, India +5:30, W-Africa/Europe +1~2,
-  // US-East -5, Moscow-to-Nairobi +3, Brazil-East -3) and between them
-  // exercise every offset story: half-hour, DST-on, DST-off, southern year.
   var WORLD = [
     { city: "Shanghai",  tz: "Asia/Shanghai"     },
     { city: "New Delhi", tz: "Asia/Kolkata"     },
@@ -292,70 +325,65 @@
     { city: "New York",  tz: "America/New_York" }
   ];
 
-  var elNum = document.getElementById("num");
-  var elMeta = document.getElementById("meta");
-  var elYear = document.getElementById("year");
-  var elTz = document.getElementById("tzline");
-  var elRemain = document.getElementById("remain");
-  var elNowline = document.getElementById("nowline");
-  var elBar = document.querySelector(".vbar");
-  var elWorld = document.getElementById("world");
-  var fmtDays = new Intl.NumberFormat();
+  var $ = function (id) { return document.getElementById(id); };
+  var elPct = $("num"), elGone = $("gone"), elLeft = $("left"), elNow = $("now");
+  var elYear = $("year"), elDoy = $("doy"), elDiy = $("diy"),
+      elLeftDays = $("left-days"), elWoy = $("woy"), elTz = $("tzline");
+  var elWorld = $("world"), elBar = document.querySelector(".scale");
+  var fmt = new Intl.NumberFormat();
 
-  // Build the world grid once; keep live nodes for the render loop.
-  var worldCells = WORLD.map(function (w) {
+  var cells = WORLD.map(function (w) {
     var cell = document.createElement("div");
     cell.className = "city";
     var name = document.createElement("div"); name.className = "cname"; name.textContent = w.city;
     var date = document.createElement("div"); date.className = "cdate";
     var pct = document.createElement("div"); pct.className = "cpct";
     var bar = document.createElement("div"); bar.className = "cbar";
-    var fill = document.createElement("i"); bar.appendChild(fill);
+    var gone = document.createElement("i"), left = document.createElement("u");
+    bar.appendChild(gone); bar.appendChild(left);
     cell.appendChild(name); cell.appendChild(date); cell.appendChild(pct); cell.appendChild(bar);
     elWorld.appendChild(cell);
     var dateFmt;
-    try { dateFmt = new Intl.DateTimeFormat(undefined, { timeZone: w.tz, weekday: "narrow", month: "short", day: "numeric" }); }
+    try { dateFmt = new Intl.DateTimeFormat(undefined, { timeZone: w.tz, weekday: "short", month: "short", day: "numeric" }); }
     catch (e) { dateFmt = new Intl.DateTimeFormat(undefined, { timeZone: "UTC", month: "short", day: "numeric" }); }
-    return { tz: w.tz, dateEl: date, pctEl: pct, fillEl: fill, dateFmt: dateFmt, last: {} };
+    return { tz: w.tz, dateEl: date, pctEl: pct, goneEl: gone, leftEl: left, dateFmt: dateFmt, last: {} };
   });
 
-  var lastNum = "", lastBar = -1, lastMeta = "";
+  var lastPct = "", lastBar = -1;
 
   function render() {
     var r = yearmath.yearPulse({ tz: explicit });
 
-    var text = r.percent.toFixed(4);
-    if (text !== lastNum) { elNum.textContent = text; lastNum = text; }
-
-    // Bar: 0.1% steps only — the now-line rides on the drain surface.
+    var digits = r.percent.toFixed(4);
+    if (digits !== lastPct) {
+      elPct.firstChild.nodeValue = digits;   // <span class="digits"> text node
+      lastPct = digits;
+    }
     var step = Math.floor(r.progress * 1000) / 1000;
     if (step !== lastBar) {
-      var remainPct = (1 - step) * 100;
-      elRemain.style.height = remainPct.toFixed(1) + "%";
-      elNowline.style.bottom = remainPct.toFixed(1) + "%";
+      var goneW = (step * 100).toFixed(1) + "%";
+      elGone.style.width = goneW;
+      elNow.style.left = "calc(" + goneW + " - 1px)";
       elBar.setAttribute("aria-valuenow", (step * 100).toFixed(1));
       lastBar = step;
     }
+    elYear.textContent = r.year;
+    elDoy.textContent = fmt.format(r.dayOfYear);
+    elDiy.textContent = fmt.format(r.daysInYear);
+    elLeftDays.textContent = fmt.format(r.daysLeft);
+    elWoy.textContent = r.weekOfYear;
+    elTz.textContent = "for " + r.timezone + (explicit ? " (?tz=)" : "");
 
-    var meta = "day <b>" + fmtDays.format(r.dayOfYear) + "</b> of " + fmtDays.format(r.daysInYear) +
-      " · <b>" + fmtDays.format(r.daysLeft) + "</b> days left · week " + r.weekOfYear;
-    if (meta !== lastMeta) {
-      elMeta.innerHTML = meta; lastMeta = meta;
-      elYear.textContent = r.year;
-      elTz.innerHTML = "computed for <code>" + r.timezone + "</code>" + (explicit ? " (via ?tz=)" : "");
-    }
-
-    // World row: one instant, six zones.
     var nowMs = Date.now();
-    for (var i = 0; i < worldCells.length; i++) {
-      var c = worldCells[i];
+    for (var i = 0; i < cells.length; i++) {
+      var c = cells[i];
       var w = yearmath.yearPulse({ tz: c.tz }, nowMs);
-      var wPct = w.percent.toFixed(2) + "%";
-      if (c.last.pct !== wPct) { c.pctEl.textContent = wPct; c.last.pct = wPct; }
-      var wFill = (Math.floor(w.progress * 1000) / 10).toFixed(1) + "%";
-      if (c.last.fill !== wFill) { c.fillEl.style.width = wFill; c.last.fill = wFill; }
-      var wDate = c.dateFmt.format(new Date(nowMs));
-      if (c.last.date !== wDate) { c.dateEl.textContent = wDate; c.last.date = wDate; }
+      var wp = w.percent.toFixed(2) + "%";
+      if (c.last.pct !== wp) { c.pctEl.textContent = wp; c.last.pct = wp; }
+      var wf = (Math.floor(w.progress * 1000) / 10).toFixed(1) + "%";
+      if (c.last.fill !== wf) { c.goneEl.style.width = wf; c.leftEl.style.left = wf; c.last.fill = wf; }
+      var wd = c.dateFmt.format(new Date(nowMs));
+      if (c.last.date !== wd) { c.dateEl.textContent = wd; c.last.date = wd; }
     }
 
     if (typeof requestAnimationFrame === "function") requestAnimationFrame(render);
