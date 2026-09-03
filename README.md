@@ -31,10 +31,11 @@ Samoa's skipped day, DST jumps, half-hour offsets: all just points on the number
 
 ## What's shown
 
-- Live percentage (second-accurate)
+- Live percentage (second-accurate), next to a vertical **pulse bar** — the year still left settles to the bottom like sand in an hourglass; the now-line rides the drain surface. Proportions follow the golden ratio (bar 1:φ² tall).
 - Day N of 365/366 (364 if your zone skipped a day that year)
 - Days and weeks remaining
 - The zone the number was computed for — so you can trust it
+- **The world row**: the same instant in six zones that together hold about three quarters of humanity — Shanghai, New Delhi, Moscow, Paris, São Paulo, New York — each with its own local date and live percentage. Watch New York hold yesterday while Shanghai is already a day ahead. The six zones deliberately exercise every offset story: a half-hour zone (Kolkata), DST-on (Paris, New York, São Paulo), DST-off (Moscow), and a southern-hemisphere year.
 
 ## Repository layout
 

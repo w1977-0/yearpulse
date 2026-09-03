@@ -168,3 +168,33 @@ function offsetGuess(tz, at) {
 function localMidnight(tz, year) {
   return ym.findLocalMidnight(tz, year, 0, 1, Date.now());
 }
+
+test("world row: six display zones are distinct and geographically ordered", () => {
+  // The page's WORLD row — percentages must be strictly ordered east to west.
+  const WORLD = [
+    "Asia/Shanghai", "Asia/Kolkata", "Europe/Moscow",
+    "Europe/Paris", "America/Sao_Paulo", "America/New_York",
+  ];
+  const now = Date.now();
+  const pcts = WORLD.map((tz) => ym.yearPulse({ tz }, now).percent);
+  for (let i = 1; i < pcts.length; i++) {
+    assert.ok(pcts[i - 1] > pcts[i], `zone ${WORLD[i - 1]} (${pcts[i - 1]}) must outrun ${WORLD[i]} (${pcts[i]})`);
+  }
+  assert.equal(new Set(pcts.map((p) => p.toFixed(6))).size, 6, "all six must differ");
+});
+
+test("world row: percentages stay ordered at any instant of the year", () => {
+  // Sample a few instants (Jan 1, mid-year, Dec 31) — order invariant.
+  const WORLD = ["Asia/Shanghai", "Asia/Kolkata", "Europe/Moscow", "Europe/Paris", "America/Sao_Paulo", "America/New_York"];
+  const probes = [
+    U("2026-01-01T12:00:00Z"),
+    U("2026-04-15T12:00:00Z"),
+    U("2026-12-31T12:00:00Z"),
+  ];
+  for (const at of probes) {
+    const pcts = WORLD.map((tz) => ym.yearPulse({ tz }, at).percent);
+    for (let i = 1; i < pcts.length; i++) {
+      assert.ok(pcts[i - 1] >= pcts[i] - 1e-9, `at ${new Date(at).toISOString()}: ${WORLD[i - 1]} ${pcts[i - 1]} !> ${WORLD[i]} ${pcts[i]}`);
+    }
+  }
+});
