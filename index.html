@@ -43,23 +43,22 @@
   /* the meter: percent on the left, hatched bar to its right */
   .meter {
     display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: start;               /* caliper rule: the reading tops the scale */
-    column-gap: clamp(1rem, 3.5vw, 2.2rem);
+    grid-template-columns: 1fr auto;   /* the scale leads, the reading follows */
+    align-items: center;               /* reading floats level with the scale */
+    column-gap: clamp(.9rem, 2.5vw, 1.6rem);
     margin-top: .4rem;
   }
-  .meter .pct { padding-top: .06em; } /* optical: digits and scale top edge */
   .pct {
-    font: 700 clamp(3.2rem, 11.5vw, 6.4rem)/0.94 system-ui, "Helvetica Neue", Helvetica, sans-serif;
+    font: 700 clamp(1.55rem, 4.5vw, 2.4rem)/1 system-ui, "Helvetica Neue", Helvetica, sans-serif;
     font-variant-numeric: tabular-nums;
-    letter-spacing: -.03em;
-    text-align: right;
+    letter-spacing: -.02em;
+    text-align: left;                  /* sits right off the scale's tail */
     white-space: nowrap;
   }
-  .pct small { font-size: .38em; font-weight: 650; letter-spacing: 0; vertical-align: .28em; margin-left: .04em; }
+  .pct small { font-size: .5em; font-weight: 650; letter-spacing: 0; margin-left: .06em; }
   .pct .digits { display: inline-block; min-width: 5ch; } /* 100.00 worst case: the bar never jumps */
   .scale {
-    position: relative; height: clamp(3rem, 8vw, 4.6rem);
+    position: relative; height: clamp(3.4rem, 9vw, 5.2rem);
     background: var(--paper);
     border: 2px solid var(--fg);
     overflow: hidden;
@@ -109,7 +108,7 @@
   @media (max-width: 40rem) {
     .world { grid-template-columns: repeat(3, 1fr); }
     .city:nth-child(4) { border-left: 0; padding-left: 0; }
-    .meter { grid-template-columns: 1fr; row-gap: 1rem; }
+    .meter { grid-template-columns: 1fr; row-gap: .55rem; }
   }
   @media (prefers-reduced-motion: reduce) { .scale, .scale * { transition: none; } }
 </style>
@@ -121,12 +120,12 @@
     <span class="mast-note">what per cent of the year is already gone · <span class="zone" id="tzline">…</span></span>
   </div>
   <div class="meter">
-    <div class="pct"><span class="digits" id="num">…</span><small>%</small></div>
     <div class="scale" role="progressbar" aria-label="Year progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <div class="gone" id="gone"></div>
       <div class="left" id="left"></div>
       <div class="now" id="now"></div>
     </div>
+    <div class="pct"><span class="digits" id="num">…</span><small>%</small></div>
   </div>
   <hr class="rule">
   <div class="facts">
