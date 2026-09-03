@@ -10,14 +10,14 @@
   :root {
     color-scheme: light dark;
     --ink: #141311;        /* the elapsed: solid fact */
-    --paper: #f4f2ec;      /* warm paper, not cold white */
+    --paper: #fdfcf8;      /* the bar's own paper — one step brighter than the page */
     --fg: #141311;
     --bg: #f4f2ec;
     --faint: rgba(20,19,17,.55);
     --hair: rgba(20,19,17,.18);
   }
   @media (prefers-color-scheme: dark) {
-    :root { --ink: #f2efe8; --paper: #17171a; --fg: #ece9e2; --bg: #101010; --faint: rgba(242,239,232,.55); --hair: rgba(242,239,232,.16); }
+    :root { --ink: #f2efe8; --paper: #1b1b1f; --fg: #ece9e2; --bg: #101010; --faint: rgba(242,239,232,.55); --hair: rgba(242,239,232,.16); }
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { height: 100%; }
@@ -31,6 +31,12 @@
     text-rendering: optimizeLegibility;
   }
   main { width: min(52rem, 94vw); }
+  .masthead {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; margin-bottom: .9rem;
+  }
+  .masthead .brand { font-weight: 700; letter-spacing: .3em; font-size: .95rem; text-transform: uppercase; }
+  .masthead .mast-note { font-size: .78rem; color: var(--faint); letter-spacing: .02em; }
 
   /* the meter: percent on the left, hatched bar to its right */
   .meter {
@@ -50,7 +56,7 @@
   .pct small { font-size: .38em; font-weight: 650; letter-spacing: 0; vertical-align: .28em; margin-left: .04em; }
   .pct .digits { display: inline-block; min-width: 5ch; } /* 100.00 worst case: the bar never jumps */
   .scale {
-    position: relative; height: clamp(2.4rem, 6vw, 3.4rem);
+    position: relative; height: clamp(3rem, 8vw, 4.6rem);
     background: var(--paper);
     border: 2px solid var(--fg);
     overflow: hidden;
@@ -73,7 +79,7 @@
 
   .facts { display: flex; flex-wrap: wrap; gap: .45rem 1.6rem; font-size: .82rem; color: var(--faint); font-variant-numeric: tabular-nums; }
   .facts b { color: var(--fg); font-weight: 600; }
-  .facts .yr { font-weight: 700; letter-spacing: .3em; text-transform: uppercase; font-size: .72rem; margin-right: auto; }
+  .facts .zone { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .76rem; }
 
   /* the world: one instant, six zones, one strict grid */
   .world {
@@ -89,7 +95,7 @@
   .cname { font-size: .68rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
   .cdate { font-size: .8rem; color: var(--faint); margin-top: .18rem; font-variant-numeric: tabular-nums; }
   .cpct { font: 650 .92rem/1 system-ui, sans-serif; font-variant-numeric: tabular-nums; margin-top: .3rem; }
-  .cbar { position: relative; height: .3rem; margin-top: .34rem; background: var(--paper); border: 1px solid var(--fg); }
+  .cbar { position: relative; height: .38rem; margin-top: .34rem; background: var(--paper); border: 1px solid var(--fg); }
   .cbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); }
   .cbar u { position: absolute; top: 0; bottom: 0; right: 0; background-image: repeating-linear-gradient(45deg, var(--fg) 0 1px, transparent 1px 4px); }
 
@@ -107,6 +113,10 @@
 </head>
 <body>
 <main>
+  <div class="masthead">
+    <span class="brand" id="year">—</span>
+    <span class="mast-note">what per cent of the year is already gone</span>
+  </div>
   <div class="meter">
     <div class="pct" id="num"><span class="digits">…</span><small>%</small></div>
     <div class="scale" role="progressbar" aria-label="Year progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -117,14 +127,13 @@
   </div>
   <hr class="rule">
   <div class="facts">
-    <span class="yr" id="year">—</span>
     <span>day <b id="doy">—</b> of <span id="diy">—</span></span>
     <span><b id="left-days">—</b> days left</span>
     <span>week <b id="woy">—</b></span>
-    <span id="tzline">…</span>
+    <span class="zone" id="tzline">…</span>
   </div>
   <div class="world" id="world" aria-label="The same year, six timezones"></div>
-  <footer><a href="https://github.com/w1977-0/yearpulse" rel="noopener">yearpulse</a><a href="https://github.com/w1977-0/yearpulse#why-most-year-progress-pages-are-wrong" rel="noopener">why this one is right</a></footer>
+  <footer><span>timezone-correct by UTC arithmetic</span><a href="https://github.com/w1977-0/yearpulse" rel="noopener">yearpulse</a><a href="https://github.com/w1977-0/yearpulse#why-most-year-progress-pages-are-wrong" rel="noopener">why this one is right</a></footer>
 </main>
 <script>
 // yearmath.js — yearpulse core math. Zero dependencies, runs in browser and Node.
@@ -372,7 +381,7 @@
     elDiy.textContent = fmt.format(r.daysInYear);
     elLeftDays.textContent = fmt.format(r.daysLeft);
     elWoy.textContent = r.weekOfYear;
-    elTz.textContent = "for " + r.timezone + (explicit ? " (?tz=)" : "");
+    elTz.textContent = r.timezone + (explicit ? " (?tz=)" : "");
 
     var nowMs = Date.now();
     for (var i = 0; i < cells.length; i++) {
