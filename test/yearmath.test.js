@@ -198,3 +198,39 @@ test("world row: percentages stay ordered at any instant of the year", () => {
     }
   }
 });
+
+// ---- forward-years invariants (2026-09 audit: the page must stay correct
+// for EVERY future year — not just the ones it was born in) ------------------
+test("forward years 2027-2056: boundaries, mid-year, day counts hold everywhere", () => {
+  const zones = ["Asia/Shanghai","America/New_York","Europe/Berlin","Australia/Sydney",
+                 "Africa/Cairo","Asia/Tehran","Pacific/Apia","Pacific/Kiritimati",
+                 "Pacific/Pago_Pago","America/Sao_Paulo","Asia/Kolkata","UTC"];
+  for (let year = 2027; year <= 2056; year++) {
+    for (const tz of zones) {
+      const mid = Date.UTC(year, 5, 1);
+      const b = ym.yearBoundariesUTC(tz, year, mid);
+      assert.ok(b.start && b.end && b.end > b.start, `${tz} ${year} boundaries`);
+      const r = ym.yearPulse({ tz }, b.start + (b.end - b.start) / 2);
+      assert.ok(r.progress > 0.4 && r.progress < 0.6, `${tz} ${year} mid=${r.progress}`);
+      assert.ok(r.daysInYear === 365 || r.daysInYear === 366, `${tz} ${year} days=${r.daysInYear}`);
+    }
+  }
+});
+
+test("century leap rules: 2000 leap, 1900/2100 not", () => {
+  assert.equal(ym.yearPulse({ tz: "UTC" }, Date.UTC(2000, 5, 1)).daysInYear, 366);
+  assert.equal(ym.yearPulse({ tz: "UTC" }, Date.UTC(1900, 5, 1)).daysInYear, 365);
+  assert.equal(ym.yearPulse({ tz: "UTC" }, Date.UTC(2100, 5, 1)).daysInYear, 365);
+});
+
+test("the last minute of any year is ~100% (theory-locked, not eyeballed)", () => {
+  // 2099-12-31 23:59:00 → 60s remaining of 365d → 99.999810%
+  const r = ym.yearPulse({ tz: "UTC" }, Date.UTC(2099, 11, 31, 23, 59));
+  assert.ok(Math.abs(r.percent - 99.99981) < 0.0002, `got ${r.percent}`);
+});
+
+test("new-year split: UTC+14 enters the next year while UTC-11 finishes the old", () => {
+  const t = Date.UTC(2027, 0, 1, 0, 30, 0);
+  assert.equal(ym.yearPulse({ tz: "Pacific/Kiritimati" }, t).year, 2027);
+  assert.equal(ym.yearPulse({ tz: "Pacific/Pago_Pago" }, t).year, 2026);
+});
