@@ -22,8 +22,6 @@ test("sanity: progress is a ratio in [0,1] for the current instant", () => {
 
 test("year boundaries: start of year is exactly 0%", () => {
   for (const tz of ["Asia/Shanghai", "America/New_York", "Pacific/Kiritimati", "Pacific/Pago_Pago", "UTC"]) {
-    const firstSecond = U("2026-01-01T00:00:01Z");
-    const r = ym.yearPulse({ tz }, firstSecond + offsetGuess(tz, firstSecond));
     // The instant must sit within the local year's first minute for `tz`.
     const r2 = ym.yearPulse({ tz }, localMidnight(tz, 2026) + 1000);
     assert.ok(r2.progress >= 0 && r2.progress < 0.00002, `${tz} start-of-year: ${r2.progress}`);
@@ -154,16 +152,14 @@ test("all-zone invariant: every IANA zone reports progress in [0,1] now", () => 
   for (const tz of zones) {
     const r = ym.yearPulse({ tz }, now);
     assert.ok(r.progress >= 0 && r.progress <= 1, `${tz}: ${r.progress}`);
-    assert.equal(r.daysInYear, [365, 366].includes(r.daysInYear) ? r.daysInYear : r.daysInYear);
+    assert.ok(
+      r.daysInYear === 365 || r.daysInYear === 366,
+      `${tz}: daysInYear=${r.daysInYear}`
+    );
   }
 });
 
 // --- helpers -------------------------------------------------------------
-
-function offsetGuess(tz, at) {
-  // not used directly; placeholder to keep signature explicit
-  return 0;
-}
 
 function localMidnight(tz, year) {
   return ym.findLocalMidnight(tz, year, 0, 1, Date.now());
