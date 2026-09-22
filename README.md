@@ -56,6 +56,15 @@ node --test test/yearmath.test.js
 
 CI runs the same suite on every push, plus checks that `index.html` stays a single self-contained file under 20 KB.
 
+## Browser support
+
+Any current Chrome, Edge, Firefox or Safari, desktop or mobile. Year boundaries are resolved through `Intl` against the platform's own IANA database, so DST rules and calendar skips are as correct as the tz data on the machine — an old browser with a stale database will show stale DST dates. The zone comes from yours by default; `?tz=` overrides it, and an unknown zone falls back to UTC.
+
+## What it does not do
+
+- **One year, one clock.** It tracks the calendar year in one zone. No countdowns to custom dates, no multiple timers, no comparison across years.
+- **No history and no storage.** Nothing is written to the device and nothing is sent anywhere; the percentage is recomputed from the current instant every tick. `?tz=` is the entire state, which is why a link is all you need to share it.
+
 ## License
 
 MIT
