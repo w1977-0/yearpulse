@@ -4,6 +4,9 @@
 
 > Live at **https://w1977-0.github.io/yearpulse/** — a single HTML file, no dependencies, no requests, ~11 KB.
 
+
+[![CI](https://github.com/w1977-0/yearpulse/actions/workflows/ci.yml/badge.svg)](https://github.com/w1977-0/yearpulse/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) ![No upload](https://img.shields.io/badge/privacy-no%20upload-green.svg)
+
 ## Why most year-progress pages are wrong
 
 A "what % of the year has passed" number looks like `day / 365`, and that is wrong almost everywhere:
