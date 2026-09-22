@@ -42,9 +42,10 @@ Samoa's skipped day, DST jumps, half-hour offsets: all just points on the number
 ```
 index.html            the whole site, single file (inlined core)
 yearmath.js           the algorithm as a standalone, dual-environment module
-test/yearmath.test.js 15 tests: leap years, DST jump days, Samoa's skipped day,
-                      UTC+14 vs UTC−11, and cross-checked values from an
-                      independent Python zoneinfo reference implementation
+test/yearmath.test.js 21 tests: leap years, DST jump days, Samoa's skipped day,
+                      UTC+14 vs UTC−11, future-year invariants through 2056,
+                      and cross-checked values from an independent Python
+                      zoneinfo reference implementation
 ```
 
 Run the tests with Node ≥ 18 (no dependencies):
