@@ -81,7 +81,14 @@
     var hi = anchor + 400 * 86400000;
     // Invariant: dayKey(lo) < targetKey <= dayKey(hi)
     if (dayKey(tz, hi) < targetKey) return null;      // date is past the window's end
-    if (dayKey(tz, lo) >= targetKey) { hi = lo; lo = hi - 800 * 86400000; }
+    if (dayKey(tz, lo) >= targetKey) {
+      // Target sits left of the window: shift it one window earlier, keeping
+      // the same width. Written with `far` first because the old one-liner
+      // rebased `lo` off the `hi` it had just overwritten.
+      var far = lo - 800 * 86400000;
+      hi = lo;
+      lo = far;
+    }
     for (var i = 0; i < 64; i++) {
       var mid = lo + (hi - lo) / 2;
       if (dayKey(tz, mid) < targetKey) lo = mid;
@@ -108,7 +115,10 @@
     try {
       var z = Intl.DateTimeFormat().resolvedOptions().timeZone;
       if (z && supportsZone(z)) return z;
-    } catch (e) {}
+    } catch (e) {
+      // No zone to read, or one this engine cannot resolve. UTC is the
+      // honest fallback here — guessing a local zone would be worse.
+    }
     return "UTC";
   }
 
